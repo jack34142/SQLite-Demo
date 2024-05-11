@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS $TABLE_NAME (
   $ID                 INTEGER PRIMARY KEY AUTOINCREMENT, 
   $COLUMN_TITLE       TEXT    NOT NULL,
   $COLUMN_DESCRIPTION TEXT    NOT NULL,
-  $COLUMN_TEACHER     TEXT    NOT NULL,
+  $COLUMN_TEACHER     INTEGER NOT NULL,
   $COLUMN_TIME        TEXT    NOT NULL,
   FOREIGN KEY($COLUMN_TEACHER) REFERENCES ${UserDao.TABLE_NAME}(${UserDao.ID}) ON DELETE CASCADE ON UPDATE CASCADE
 )
@@ -32,7 +32,8 @@ CREATE TABLE IF NOT EXISTS $TABLE_NAME (
     required int teacher_id,
     required List<String> time_json,
   }) async {
-    if( !_validTimeJson(time_json) ){
+    time_json = _validTimeJson(time_json);
+    if(time_json.isEmpty){
       return 0;
     }
     final db = await getDb();
@@ -62,7 +63,8 @@ CREATE TABLE IF NOT EXISTS $TABLE_NAME (
       data[COLUMN_DESCRIPTION] = description;
     }
     if(time_json != null){
-      if( !_validTimeJson(time_json) ){
+      time_json = _validTimeJson(time_json);
+      if(time_json.isEmpty){
         return 0;
       }
       data[COLUMN_TIME] = jsonEncode(time_json);
@@ -109,17 +111,27 @@ WHERE a.$COLUMN_TEACHER='$teacher_id'
   }
 
   // ------------------------------
-  bool _validTimeJson(List<String> time_json){
-    for (var str in time_json) {
-      final week = int.parse(str.substring(0, 1));
-      final time = int.parse(str.substring(1));
-      debugPrint("$week, $time");
-      if(week < 1 || week > 7){
-        return false;
-      }else if (time < 0 || time > 23){
-        return false;
-      }
+  List<String> _validTimeJson(List<String> time_json){
+    if(time_json.isEmpty){
+      return [];
     }
-    return true;
+
+    var str = time_json.first;
+    final week = int.parse(str.substring(0, 1));
+    int time_start = int.parse(str.substring(1));
+
+    str = time_json.last;
+    final time_end = int.parse(str.substring(1));
+
+    if(week < 1 || week > 7 || time_start < 0 || time_start > 23 || time_end < 0 || time_end > 23){
+      return [];
+    }
+
+    List<String> ary = [];
+    while(time_start <= time_end){
+      ary.add( "$week$time_start" );
+      time_start++;
+    }
+    return ary;
   }
 }

@@ -34,6 +34,7 @@ class TeacherController extends BaseController {
 
   Future<List<Schedule>> getSchedule() async {
     schedules.clear();
+    _timeUsed.clear();
     schedules.addAll(await ScheduleDao().getSchedule(GlobalData.user!.id));
     for (var schedule in schedules) {
       for (var str in schedule.timeJson) {
@@ -48,15 +49,7 @@ class TeacherController extends BaseController {
     if(affect_rows == 0){
       return false;
     }
-
-    schedules.add(Schedule(
-        id: lesson.id,
-        title: lesson.title,
-        timeJson: lesson.timeJson
-    ));
-    for (var str in lesson.timeJson) {
-      _timeUsed.add(str);
-    }
+    await getSchedule();
     return true;
   }
 
@@ -65,11 +58,7 @@ class TeacherController extends BaseController {
     if(affect_rows == 0){
       return false;
     }
-
-    schedules.removeWhere((element) => element.id == schedule.id);
-    for (var str in schedule.timeJson) {
-      _timeUsed.remove(str);
-    }
+    await getSchedule();
     return true;
   }
 

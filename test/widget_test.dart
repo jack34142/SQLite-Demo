@@ -33,6 +33,16 @@ void main() {
       UserDao.COLUMN_PASSWORD: "123456",
       UserDao.COLUMN_JOB: UserDao.ENUM_PROFESSOR,
     };
+
+    expect(await userDao.insert(  // 註冊
+        name: user[UserDao.COLUMN_NAME]!,
+        introduction: user[UserDao.COLUMN_INTRODUCTION]!,
+        avatar: user[UserDao.COLUMN_AVATAR]!,
+        account: user[UserDao.COLUMN_ACCOUNT]!,
+        password: user[UserDao.COLUMN_PASSWORD]!,
+        job: "test job"  // job必須是 Demonstrator Lecturer Senior Lecturer Professor Student
+    ), 0);  // 註冊失敗
+
     final uid = await userDao.insert(  // 註冊
       name: user[UserDao.COLUMN_NAME]!,
       introduction: user[UserDao.COLUMN_INTRODUCTION]!,

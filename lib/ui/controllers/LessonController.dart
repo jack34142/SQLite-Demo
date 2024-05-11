@@ -18,10 +18,11 @@ class LessonController extends BaseController {
 
   Future<void> getLessons() async {
     lessons.clear();
-    isShowInfo.clear();
     lessons.addAll( await LessonDao().getLessons(GlobalData.user!.id) );
     for (var lesson in lessons) {
-      isShowInfo[lesson.id] = false;
+      if( !isShowInfo.containsKey(lesson.id) ){
+        isShowInfo[lesson.id] = false;
+      }
     }
     lessons.refresh();
   }
@@ -31,10 +32,8 @@ class LessonController extends BaseController {
     if( affect_rows == 0){
       return false;
     }
-
-    lessons.removeWhere((element) => element.id == lesson.id);
     isShowInfo.remove(lesson.id);
-    lessons.refresh();
+    await getLessons();
     return true;
   }
 
@@ -47,9 +46,7 @@ class LessonController extends BaseController {
     if( affect_rows == 0){
       return false;
     }
-    int index = lessons.indexWhere((element) => element.id == lesson.id);
-    lessons[index] = lesson;
-    lessons.refresh();
+    await getLessons();
     return true;
   }
 
@@ -63,13 +60,7 @@ class LessonController extends BaseController {
     if( lesson_id == 0){
       return false;
     }
-    final row = lesson.toJson();
-    row["id"] = lesson.id;
-    lesson = Lesson.fromJson(row);
-
-    lessons.add(lesson);
-    isShowInfo[lesson.id] = false;
-    lessons.refresh();
+    await getLessons();
     return true;
   }
 }
